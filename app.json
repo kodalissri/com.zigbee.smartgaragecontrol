@@ -1,3 +1,299 @@
 {
-  "_comment": "This file is generated. Please edit .homeycompose/app.json instead."
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.zigbee.smartgaragecontrol",
+  "version": "1.0.0",
+  "compatibility": ">=12.4.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Smart Garage Control"
+  },
+  "description": {
+    "en": "Securely control and monitor your garage door from anywhere."
+  },
+  "category": [
+    "security"
+  ],
+  "permissions": [],
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Naresh Kodali",
+    "email": "kodalis.sri@gmail.com"
+  },
+  "flow": {
+    "triggers": [
+      {
+        "id": "runtime_alarm_triggered",
+        "title": {
+          "en": "The door run time alarm triggered"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=Garage_Door_Opener"
+          }
+        ]
+      },
+      {
+        "id": "opentime_alarm_triggered",
+        "title": {
+          "en": "The door open time alarm triggered"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=Garage_Door_Opener"
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "status_is",
+        "title": {
+          "en": "Status is..."
+        },
+        "titleFormatted": {
+          "en": "Status is [[alarm_type]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=Garage_Door_Opener"
+          },
+          {
+            "name": "alarm_type",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "0",
+                "label": {
+                  "en": "Open Time Alarm"
+                }
+              },
+              {
+                "id": "1",
+                "label": {
+                  "en": "Run Time Alarm"
+                }
+              },
+              {
+                "id": "2",
+                "label": {
+                  "en": "Normal"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "id": "push_door_button",
+        "title": {
+          "en": "Push Door Button"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=Garage_Door_Opener"
+          }
+        ]
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "id": "Garage_Door_Opener",
+      "name": {
+        "en": "Garage Door Opener"
+      },
+      "class": "garagedoor",
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "zigbee"
+      ],
+      "capabilities": [
+        "alarm_contact",
+        "garage_Door_Button",
+        "garage_Door_State_Capability"
+      ],
+      "statusIndicator": "alarm_contact",
+      "capabilitiesConfig": {
+        "alarm_contact": {
+          "title": {
+            "en": "Door State"
+          }
+        },
+        "garage_Door_Button": {
+          "title": {
+            "en": "Trigger Door"
+          },
+          "uiComponent": "button"
+        },
+        "garage_Door_State_Capability": {
+          "title": {
+            "en": "System Status"
+          },
+          "uiComponent": "sensor"
+        }
+      },
+      "images": {
+        "large": "/drivers/Garage_Door_Opener/assets/assets/images/large.png",
+        "small": "/drivers/Garage_Door_Opener/assets/assets/images/small.png"
+      },
+      "zigbee": {
+        "manufacturerName": [
+          "_TZE200_wfxuhoea"
+        ],
+        "productId": [
+          "GDC311ZBQ1",
+          "TS0601"
+        ],
+        "endpoints": {
+          "1": {
+            "clusters": [
+              0,
+              4,
+              5,
+              61184
+            ],
+            "bindings": [
+              61184
+            ]
+          }
+        }
+      },
+      "settings": [
+        {
+          "id": "count_down",
+          "type": "number",
+          "label": {
+            "en": "Countdown to trigger door movement after a certain time, will pulse output in all cases"
+          },
+          "value": 1,
+          "min": 0,
+          "max": 43200,
+          "units": {
+            "en": "seconds",
+            "nl": "seconden"
+          }
+        },
+        {
+          "id": "run_time",
+          "type": "number",
+          "label": {
+            "en": "Configure the time to wait for the door contact status to change before triggering a run time alarm"
+          },
+          "value": 1,
+          "min": 0,
+          "max": 120,
+          "units": {
+            "en": "seconds",
+            "nl": "seconden"
+          }
+        },
+        {
+          "id": "open_alarm_time",
+          "type": "number",
+          "label": {
+            "en": "Configure the amount of time the door may be open before an open time alarm is triggered"
+          },
+          "value": 2,
+          "min": 1,
+          "max": 86400,
+          "units": {
+            "en": "seconds",
+            "nl": "seconden"
+          }
+        }
+      ]
+    }
+  ],
+  "capabilities": {
+    "garage_Door_Button": {
+      "type": "boolean",
+      "title": {
+        "en": "Garage Door Button"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "toggle",
+      "uiQuickAction": true,
+      "icon": "/drivers/Garage_Door_Opener/assets/icon.svg"
+    },
+    "garage_Door_State_Capability": {
+      "type": "enum",
+      "title": {
+        "en": "Garage Door State"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "values": [
+        {
+          "id": "0",
+          "title": {
+            "en": "Open Time Alarm"
+          },
+          "icon": "/drivers/Garage_Door_Opener/assets/alarm.svg"
+        },
+        {
+          "id": "1",
+          "title": {
+            "en": "Run Time Alarm"
+          },
+          "icon": "/drivers/Garage_Door_Opener/assets/warning.svg"
+        },
+        {
+          "id": "2",
+          "title": {
+            "en": "Closed"
+          },
+          "icon": "/drivers/Garage_Door_Opener/assets/normal.svg"
+        },
+        {
+          "id": "open",
+          "title": {
+            "en": "Open"
+          },
+          "icon": "/assets/garage_open.svg"
+        },
+        {
+          "id": "closed",
+          "title": {
+            "en": "Closed"
+          },
+          "icon": "/drivers/Garage_Door_Opener/assets/garage_closed.svg"
+        },
+        {
+          "id": "moving",
+          "title": {
+            "en": "Moving"
+          },
+          "icon": "/drivers/Garage_Door_Opener/assets/movement.svg"
+        },
+        {
+          "id": "unknown",
+          "title": {
+            "en": "unknown/Partially Open"
+          },
+          "icon": "/drivers/Garage_Door_Opener/assets/unknown.svg"
+        }
+      ]
+    }
+  }
 }
