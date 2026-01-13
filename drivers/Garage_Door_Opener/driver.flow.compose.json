@@ -1,0 +1,49 @@
+{
+  "triggers": [
+    {
+      "id": "runtime_alarm_triggered",
+      "title": { "en": "The door run time alarm triggered" }
+    },
+    {
+      "id": "opentime_alarm_triggered",
+      "title": { "en": "The door open time alarm triggered" }
+    }
+  ],
+  "conditions": [
+    {
+      "id": "status_is",
+      "title": { "en": "Status is..." },
+      "titleFormatted": { "en": "Status is [[alarm_type]]" },
+      "args": [
+        {
+          "name": "alarm_type",
+          "type": "dropdown",
+          "values": [
+            {
+              "id": "0",
+              "label": { "en": "Open Time Alarm" }
+            },
+            {
+              "id": "1",
+              "label": { "en": "Run Time Alarm" }
+            },
+            {
+              "id": "2",
+              "label": { "en": "Normal" }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  
+  "actions": [
+      {
+        "id": "push_door_button",
+        "title": {
+          "en": "Push Door Button"
+        }
+      }
+    ]
+  
+}

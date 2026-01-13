@@ -1,0 +1,13 @@
+{
+  "type": "boolean",
+  "title": {
+    "en": "Garage Door Button"
+  },
+  "getable": true,
+  "setable": true,
+  "uiComponent": "toggle",
+  "uiQuickAction": true,
+  "icon": "/drivers/Garage_Door_Opener/assets/icon.svg"
+
+}
+

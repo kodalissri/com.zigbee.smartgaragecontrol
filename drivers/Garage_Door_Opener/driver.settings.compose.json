@@ -1,0 +1,44 @@
+[
+  {
+    "id": "count_down",
+    "type": "number",
+    "label": {
+      "en": "Countdown to trigger door movement after a certain time, will pulse output in all cases"
+    },
+    "value": 1,
+    "min": 0,
+    "max": 43200,
+    "units": {
+      "en": "seconds",
+      "nl": "seconden"
+    }
+  },
+    {
+      "id": "run_time",
+      "type": "number",
+      "label": {
+        "en": "Configure the time to wait for the door contact status to change before triggering a run time alarm"
+      },
+      "value": 1,
+      "min": 0,
+      "max": 120,
+      "units": {
+        "en": "seconds",
+        "nl": "seconden"
+      }
+   },
+    {
+      "id": "open_alarm_time",
+      "type": "number",
+      "label": {
+        "en": "Configure the amount of time the door may be open before an open time alarm is triggered"
+      },
+      "value": 2,
+      "min": 1,
+      "max": 86400,
+      "units": {
+        "en": "seconds",
+        "nl": "seconden"
+      }
+    }
+]

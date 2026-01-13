@@ -1,0 +1,46 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Garage Door State"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "values": [
+    {
+      "id": "0",
+      "title": { "en": "Open Time Alarm" },
+      "icon": "/drivers/Garage_Door_Opener/assets/alarm.svg"
+    },
+    {
+      "id": "1",
+      "title": { "en": "Run Time Alarm" },
+      "icon": "/drivers/Garage_Door_Opener/assets/warning.svg"
+    },
+    {
+      "id": "2",
+      "title": { "en": "Closed" },
+      "icon": "/drivers/Garage_Door_Opener/assets/normal.svg"
+    },
+    {
+      "id": "open",
+      "title": { "en": "Open" },
+      "icon": "/assets/garage_open.svg"
+    },
+    {
+      "id": "closed",
+      "title": { "en": "Closed" },
+      "icon": "/drivers/Garage_Door_Opener/assets/garage_closed.svg"
+    },
+    {
+      "id": "moving",
+      "title": { "en": "Moving" },
+      "icon": "/drivers/Garage_Door_Opener/assets/movement.svg"
+    },
+    {
+      "id": "unknown",
+      "title": { "en": "unknown/Partially Open" },
+      "icon": "/drivers/Garage_Door_Opener/assets/unknown.svg"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "id": "Garage_Door_Opener",
+  "name": {
+    "en": "Garage Door Opener"
+  },
+  "class": "garagedoor",
+  "platforms": [ "local" ],
+  "connectivity": [ "zigbee" ],
+  "capabilities": [
+    "alarm_contact",
+    "garage_Door_Button",
+    "garage_Door_State_Capability"
+  ],
+  "statusIndicator": "alarm_contact",
+  "capabilitiesConfig": {
+    "alarm_contact": {
+      "title": { "en": "Door State" }
+    },
+    "garage_Door_Button": {
+      "title": { "en": "Trigger Door" },
+      "uiComponent": "button"
+      
+    },
+    "garage_Door_State_Capability": {
+      "title": { "en": "System Status" },
+      "uiComponent": "sensor"
+    }
+  },
+  "images": {
+    "large": "{{driverAssetsPath}}/assets/images/large.png",
+    "small": "{{driverAssetsPath}}/assets/images/small.png"
+  },
+  "zigbee": {
+    "manufacturerName": [ "_TZE200_wfxuhoea" ],
+    "productId": [ "GDC311ZBQ1", "TS0601" ],
+    "endpoints": {
+      "1": {
+        "clusters": [ 0, 4, 5, 61184 ],
+        "bindings": [ 61184 ]
+      }
+    }
+  }
+}
