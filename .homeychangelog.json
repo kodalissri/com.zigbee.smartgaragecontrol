@@ -4,5 +4,8 @@
   },
   "1.0.1": {
     "en": "made changes to App images"
+  },
+  "1.0.2": {
+    "en": "Add support for additional Tuya garage door fingerprints"
   }
 }
