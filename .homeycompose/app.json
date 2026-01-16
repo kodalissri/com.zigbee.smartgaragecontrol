@@ -25,5 +25,7 @@
   "author": {
     "name": "Naresh Kodali",
     "email": "kodalis.sri@gmail.com"
-  }
+  },
+  "support": "https://community.homey.app/t/app-pro-tuya-zigbee-garage-door-opener/149230",
+  "source": "https://github.com/kodalissri/com.zigbee.smartgaragecontrol"
 }
