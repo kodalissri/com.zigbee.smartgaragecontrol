@@ -55,8 +55,38 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
             const isCurrentlyOpen = this.getCapabilityValue('alarm_contact') === true;
             const expectedEndState = !isCurrentlyOpen;
 
-            // Physical Zigbee Write
-            await this.writeBool(dataPoints.doorTrigger, true).catch(this.error);
+            // Physical Zigbee Write with timeout handling
+            // Note: This device often times out on acknowledgment but still processes the command
+            try {
+                await this.writeBool(dataPoints.doorTrigger, true);
+                this.log('Zigbee command sent and acknowledged');
+            } catch (err) {
+                // Check if it's a timeout error (command sent but no ack)
+                if (err.message && err.message.includes('Timeout')) {
+                    this.log('Command sent (timeout on acknowledgment - this is normal for this device)');
+                    // Timeout is expected, continue normally
+                } else {
+                    // Real error - log and try to recover
+                    this.error('Zigbee write error:', err.message);
+
+                    // Try one more time for non-timeout errors
+                    try {
+                        await new Promise(resolve => this.homey.setTimeout(resolve, 500));
+                        await this.writeBool(dataPoints.doorTrigger, true);
+                        this.log('Retry successful');
+                    } catch (retryErr) {
+                        this.error('Retry failed, device may be offline');
+                        if (this.hasCapability('garage_Door_State_Capability')) {
+                            await this.setCapabilityValue('garage_Door_State_Capability', 'error').catch(this.error);
+                        }
+                        this.homey.setTimeout(async () => {
+                            const currentState = this.getCapabilityValue('alarm_contact');
+                            await this.setCapabilityValue('garage_Door_State_Capability', currentState ? 'open' : 'closed').catch(this.error);
+                        }, 3000);
+                        return;
+                    }
+                }
+            }
 
             // Start safety timer
             this.startSafetyTimer(expectedEndState);
@@ -98,6 +128,37 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
                 if (rtTrigger) rtTrigger.trigger(this).catch(this.error);
             }
         }, runTimeSetting * 1000);
+    }
+
+    // --- Open Time Alarm Logic ---
+    startOpenAlarmTimer() {
+        this.homey.clearTimeout(this.openAlarmTimer);
+        const openAlarmTimeSetting = parseInt(this.getSettings()['open_alarm_time']) || 0;
+
+        if (openAlarmTimeSetting <= 0) {
+            this.log('Open alarm timer disabled (value: 0 or not set)');
+            return;
+        }
+
+        this.log(`Starting open alarm timer for ${openAlarmTimeSetting} seconds`);
+        this.openAlarmTimer = this.homey.setTimeout(async () => {
+            const isStillOpen = this.getCapabilityValue('alarm_contact') === true;
+
+            if (isStillOpen) {
+                this.log(`Open Time Alarm: Door has been open for ${openAlarmTimeSetting} seconds`);
+
+                // Trigger the open time alarm flow card
+                const openTimeAlarmTrigger = this.homey.flow.getDeviceTriggerCard('opentime_alarm_triggered');
+                if (openTimeAlarmTrigger) {
+                    openTimeAlarmTrigger.trigger(this).catch(this.error);
+                }
+            }
+        }, openAlarmTimeSetting * 1000);
+    }
+
+    stopOpenAlarmTimer() {
+        this.homey.clearTimeout(this.openAlarmTimer);
+        this.log('Open alarm timer stopped');
     }
 
     // --- Initialization ---
@@ -149,6 +210,13 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
                 if (this.hasCapability('garage_Door_State_Capability')) {
                     await this.setCapabilityValue('garage_Door_State_Capability', isOpen ? 'open' : 'closed').catch(this.error);
                 }
+
+                // Manage open time alarm
+                if (isOpen) {
+                    this.startOpenAlarmTimer();
+                } else {
+                    this.stopOpenAlarmTimer();
+                }
                 break;
 
             case dataPoints.status:
@@ -170,7 +238,24 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
                 await this.writeData32(settingsMap[key], newSettings[key]).catch(this.error);
             }
         }
+
+        // If open_alarm_time changed, restart the timer if door is currently open
+        if (changedKeys.includes('open_alarm_time')) {
+            const isCurrentlyOpen = this.getCapabilityValue('alarm_contact') === true;
+            if (isCurrentlyOpen) {
+                this.log('Open alarm time setting changed, restarting timer');
+                this.startOpenAlarmTimer();
+            }
+        }
+
         return true;
+    }
+
+    async onDeleted() {
+        this.log('Device deleted, cleaning up timers');
+        this.homey.clearTimeout(this.safetyTimer);
+        this.homey.clearTimeout(this.delayedTriggerTimer);
+        this.homey.clearTimeout(this.openAlarmTimer);
     }
 }
 

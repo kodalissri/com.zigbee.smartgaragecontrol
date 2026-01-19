@@ -10,5 +10,8 @@
   },
   "1.0.3": {
     "en": "Fixed missing ID error"
+  },
+  "1.0.4": {
+    "en": "Fixed open time alarm functionality and improved button trigger reliability with better timeout handling"
   }
 }
