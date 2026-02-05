@@ -13,5 +13,8 @@
   },
   "1.0.4": {
     "en": "Fixed open time alarm functionality and improved button trigger reliability with better timeout handling"
+  },
+  "1.0.5": {
+    "en": "Improved flow trigger reliability with better error handling and logging"
   }
 }

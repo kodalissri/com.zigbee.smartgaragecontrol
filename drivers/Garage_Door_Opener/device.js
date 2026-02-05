@@ -124,8 +124,17 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
                 }
 
                 // 3. Trigger Flow
-                const rtTrigger = this.homey.flow.getDeviceTriggerCard('runtime_alarm_triggered');
-                if (rtTrigger) rtTrigger.trigger(this).catch(this.error);
+                try {
+                    const rtTrigger = this.homey.flow.getDeviceTriggerCard('runtime_alarm_triggered');
+                    if (rtTrigger) {
+                        await rtTrigger.trigger(this, {}, {});
+                        this.log('Runtime alarm flow triggered successfully');
+                    } else {
+                        this.error('Runtime alarm trigger card not found');
+                    }
+                } catch (err) {
+                    this.error('Error triggering runtime alarm flow:', err.message);
+                }
             }
         }, runTimeSetting * 1000);
     }
@@ -145,13 +154,22 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
             const isStillOpen = this.getCapabilityValue('alarm_contact') === true;
 
             if (isStillOpen) {
-                this.log(`Open Time Alarm: Door has been open for ${openAlarmTimeSetting} seconds`);
+                this.log(`Open Time Alarm: Door has been open for ${openAlarmTimeSetting} seconds - triggering flow`);
 
                 // Trigger the open time alarm flow card
-                const openTimeAlarmTrigger = this.homey.flow.getDeviceTriggerCard('opentime_alarm_triggered');
-                if (openTimeAlarmTrigger) {
-                    openTimeAlarmTrigger.trigger(this).catch(this.error);
+                try {
+                    const openTimeAlarmTrigger = this.homey.flow.getDeviceTriggerCard('opentime_alarm_triggered');
+                    if (openTimeAlarmTrigger) {
+                        await openTimeAlarmTrigger.trigger(this, {}, {});
+                        this.log('Open time alarm flow triggered successfully');
+                    } else {
+                        this.error('Open time alarm trigger card not found');
+                    }
+                } catch (err) {
+                    this.error('Error triggering open time alarm flow:', err.message);
                 }
+            } else {
+                this.log('Open alarm timer expired but door is now closed');
             }
         }, openAlarmTimeSetting * 1000);
     }
