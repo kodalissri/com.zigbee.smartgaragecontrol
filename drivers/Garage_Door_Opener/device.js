@@ -51,7 +51,6 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
 
         this.homey.clearTimeout(this.delayedTriggerTimer);
         this.homey.clearTimeout(this.safetyTimer);
-        this.homey.clearTimeout(this.earlyCheckTimer);
 
         const settings = this.getSettings();
         const countdownSeconds = parseInt(settings['count_down']) || 0;
@@ -111,22 +110,6 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
                 this.error('Command not sent - aborting');
                 return;
             }
-
-            // Early detection: Check if device is responding after 3 seconds
-            this.earlyCheckTimer = this.homey.setTimeout(async () => {
-                const currentContact = this.getCapabilityValue('alarm_contact');
-
-                // If door hasn't started moving, send command again
-                if (currentContact !== expectedEndState) {
-                    this.log('Early check: Door not responding, sending retry command...');
-                    try {
-                        await this.writeBool(dataPoints.doorTrigger, true);
-                        this.log('Retry command sent');
-                    } catch (err) {
-                        this.log('Retry command failed (this is often okay):', err.message);
-                    }
-                }
-            }, 3000);
 
             // Start safety timer
             this.startSafetyTimer(expectedEndState);
@@ -259,7 +242,6 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
                 const isOpen = !!value;
                 this.homey.clearTimeout(this.safetyTimer);
                 this.homey.clearTimeout(this.delayedTriggerTimer);
-                this.homey.clearTimeout(this.earlyCheckTimer);
 
                 await this.setCapabilityValue('alarm_contact', isOpen).catch(this.error);
                 if (this.hasCapability('garage_Door_Button')) {
@@ -314,7 +296,6 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
         this.log('Device deleted, cleaning up timers');
         this.homey.clearTimeout(this.safetyTimer);
         this.homey.clearTimeout(this.delayedTriggerTimer);
-        this.homey.clearTimeout(this.earlyCheckTimer);
         this.homey.clearTimeout(this.openAlarmTimer);
     }
 }

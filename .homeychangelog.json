@@ -22,5 +22,8 @@
   },
   "1.0.7": {
     "en": "Add early detection and auto-retry for unresponsive door commands"
+  },
+  "1.0.8": {
+    "en": "Remove early retry logic that was causing door to stop mid-movement"
   }
 }
