@@ -19,5 +19,8 @@
   },
   "1.0.6": {
     "en": "Add command debouncing to prevent device lockout and improve trigger reliability"
+  },
+  "1.0.7": {
+    "en": "Add early detection and auto-retry for unresponsive door commands"
   }
 }
