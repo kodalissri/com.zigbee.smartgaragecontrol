@@ -39,6 +39,16 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
 
     // --- Core Logic: Trigger the Door ---
     async triggerDoorPulse() {
+        // Prevent rapid successive commands - device needs time to process
+        const now = Date.now();
+        const timeSinceLastCommand = now - (this.lastCommandTime || 0);
+        const minCommandInterval = 2000; // 2 seconds minimum between commands
+
+        if (timeSinceLastCommand < minCommandInterval) {
+            this.log(`Command blocked - too soon after previous command (${timeSinceLastCommand}ms ago, minimum ${minCommandInterval}ms)`);
+            return;
+        }
+
         this.homey.clearTimeout(this.delayedTriggerTimer);
         this.homey.clearTimeout(this.safetyTimer);
 
@@ -47,6 +57,7 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
 
         const sendPulse = async () => {
             this.log('Sending Pulse to Tuya MCU...');
+            this.lastCommandTime = Date.now();
 
             if (this.hasCapability('garage_Door_State_Capability')) {
                 await this.setCapabilityValue('garage_Door_State_Capability', 'moving').catch(this.error);
@@ -55,15 +66,21 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
             const isCurrentlyOpen = this.getCapabilityValue('alarm_contact') === true;
             const expectedEndState = !isCurrentlyOpen;
 
+            // Add small delay to ensure device is ready
+            await new Promise(resolve => this.homey.setTimeout(resolve, 100));
+
             // Physical Zigbee Write with timeout handling
             // Note: This device often times out on acknowledgment but still processes the command
+            let commandSent = false;
             try {
                 await this.writeBool(dataPoints.doorTrigger, true);
                 this.log('Zigbee command sent and acknowledged');
+                commandSent = true;
             } catch (err) {
                 // Check if it's a timeout error (command sent but no ack)
                 if (err.message && err.message.includes('Timeout')) {
                     this.log('Command sent (timeout on acknowledgment - this is normal for this device)');
+                    commandSent = true;
                     // Timeout is expected, continue normally
                 } else {
                     // Real error - log and try to recover
@@ -74,6 +91,7 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
                         await new Promise(resolve => this.homey.setTimeout(resolve, 500));
                         await this.writeBool(dataPoints.doorTrigger, true);
                         this.log('Retry successful');
+                        commandSent = true;
                     } catch (retryErr) {
                         this.error('Retry failed, device may be offline');
                         if (this.hasCapability('garage_Door_State_Capability')) {
@@ -86,6 +104,11 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
                         return;
                     }
                 }
+            }
+
+            if (!commandSent) {
+                this.error('Command not sent - aborting');
+                return;
             }
 
             // Start safety timer

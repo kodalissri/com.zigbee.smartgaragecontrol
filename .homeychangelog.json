@@ -16,5 +16,8 @@
   },
   "1.0.5": {
     "en": "Improved flow trigger reliability with better error handling and logging"
+  },
+  "1.0.6": {
+    "en": "Add command debouncing to prevent device lockout and improve trigger reliability"
   }
 }
