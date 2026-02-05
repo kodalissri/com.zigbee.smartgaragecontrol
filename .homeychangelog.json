@@ -25,5 +25,8 @@
   },
   "1.0.8": {
     "en": "Remove early retry logic that was causing door to stop mid-movement"
+  },
+  "1.0.9": {
+    "en": "Fixed open alarm time trigger"
   }
 }
