@@ -38,6 +38,12 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
     }
 
     // --- Core Logic: Trigger the Door ---
+    async syncButtonToContact() {
+        if (!this.hasCapability('garage_Door_Button')) return;
+        const currentContact = this.getCapabilityValue('alarm_contact');
+        await this.setCapabilityValue('garage_Door_Button', !!currentContact).catch(this.error);
+    }
+
     async triggerDoorPulse() {
         // Prevent rapid successive commands - device needs time to process
         const now = Date.now();
@@ -46,6 +52,7 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
 
         if (timeSinceLastCommand < minCommandInterval) {
             this.log(`Command blocked - too soon after previous command (${timeSinceLastCommand}ms ago, minimum ${minCommandInterval}ms)`);
+            await this.syncButtonToContact();
             return;
         }
 
@@ -73,7 +80,8 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
             // Note: This device often times out on acknowledgment but still processes the command
             let commandSent = false;
             try {
-                await this.writeBool(dataPoints.doorTrigger, true);
+                // DP1 expects the desired end state: true=open, false=closed.
+                await this.writeBool(dataPoints.doorTrigger, expectedEndState);
                 this.log('Zigbee command sent and acknowledged');
                 commandSent = true;
             } catch (err) {
@@ -89,11 +97,12 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
                     // Try one more time for non-timeout errors
                     try {
                         await new Promise(resolve => this.homey.setTimeout(resolve, 500));
-                        await this.writeBool(dataPoints.doorTrigger, true);
+                        await this.writeBool(dataPoints.doorTrigger, expectedEndState);
                         this.log('Retry successful');
                         commandSent = true;
                     } catch (retryErr) {
                         this.error('Retry failed, device may be offline');
+                        await this.syncButtonToContact();
                         if (this.hasCapability('garage_Door_State_Capability')) {
                             await this.setCapabilityValue('garage_Door_State_Capability', 'error').catch(this.error);
                         }
@@ -108,6 +117,7 @@ class GarageDoorTrigger extends TuyaSpecificClusterDevice {
 
             if (!commandSent) {
                 this.error('Command not sent - aborting');
+                await this.syncButtonToContact();
                 return;
             }
 
