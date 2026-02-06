@@ -28,5 +28,8 @@
   },
   "1.0.9": {
     "en": "Fixed open alarm time trigger"
+  },
+  "1.0.10": {
+    "en": "Updated Dp1 operation"
   }
 }
